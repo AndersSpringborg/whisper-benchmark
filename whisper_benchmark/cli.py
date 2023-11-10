@@ -50,7 +50,7 @@ def main():
     parser.add_argument("--compression_ratio_threshold", type=utils.optional_float, default=2.4, help="if the gzip compression ratio is higher than this value, treat the decoding as failed")
     parser.add_argument("--logprob_threshold", type=utils.optional_float, default=-1.0, help="if the average log probability is lower than this value, treat the decoding as failed")
     parser.add_argument("--no_speech_threshold", type=utils.optional_float, default=0.6, help="if the probability of the <|nospeech|> token is higher than this value AND the decoding has failed due to `logprob_threshold`, consider the segment as silence")
-    parser.add_argument("--threads", default=0, help="number of threads used by torch for CPU inference; supercedes MKL_NUM_THREADS/OMP_NUM_THREADS")
+    parser.add_argument("--threads", type=int, default=0, help="number of threads used by torch for CPU inference; supercedes MKL_NUM_THREADS/OMP_NUM_THREADS")
 
     opts = vars(parser.parse_args())
 
@@ -61,8 +61,11 @@ def main():
         temperature = [temperature]
     opts['temperature'] = temperature
 
-    if (threads := opts.pop("threads")) > 0:
+    threads = opts.pop("threads")
+    if threads > 0:
         torch.set_num_threads(threads)
+    else:
+        threads = torch.get_num_threads()
 
     if opts['verbose'] == 0:
         opts['verbose'] = None
@@ -90,6 +93,7 @@ def main():
         whisper_version=whisper.version.__version__,
         numba_version=numba.version_info.string,
         numpy_version=np.version.version,
+        threads=threads,
     )
     for key, value in result.items():
         print(key, ':', value)
