@@ -23,6 +23,14 @@ Test example: File uploading
 ::
 
   $ whisper-benchmark en-male-1 --model-name tiny
+  content_frames : 16297
+  dtype : torch.float32
+  language : en
+  start_time : 1699593688.3675494
+  end_time : 1699593693.0126545
+  elapsed : 4.6451051235198975
+  fps : 3508.4243664330047
+  device : cuda
 
 
 Contribute

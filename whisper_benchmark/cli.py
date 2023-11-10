@@ -1,4 +1,6 @@
+import sys
 import argparse
+import warnings
 import numpy as np
 import torch
 from whisper import utils
@@ -19,6 +21,7 @@ def main():
     parser.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu", help="device to use for PyTorch inference")
     parser.add_argument("--task", type=str, default="transcribe", choices=["transcribe", "translate"], help="whether to perform X->X speech recognition ('transcribe') or X->English translation ('translate')")
 
+    parser.add_argument("--verbose", type=int, default=0, help="0: Muted, 1: Info, 2: Verbose")
     parser.add_argument("--temperature", type=float, default=0, help="temperature to use for sampling")
     parser.add_argument("--best_of", type=utils.optional_int, default=5, help="number of candidates when sampling with non-zero temperature")
     parser.add_argument("--beam_size", type=utils.optional_int, default=5, help="number of beams in beam search, only applicable when temperature is zero")
@@ -34,6 +37,7 @@ def main():
     parser.add_argument("--compression_ratio_threshold", type=utils.optional_float, default=2.4, help="if the gzip compression ratio is higher than this value, treat the decoding as failed")
     parser.add_argument("--logprob_threshold", type=utils.optional_float, default=-1.0, help="if the average log probability is lower than this value, treat the decoding as failed")
     parser.add_argument("--no_speech_threshold", type=utils.optional_float, default=0.6, help="if the probability of the <|nospeech|> token is higher than this value AND the decoding has failed due to `logprob_threshold`, consider the segment as silence")
+    parser.add_argument("--threads", default=0, help="number of threads used by torch for CPU inference; supercedes MKL_NUM_THREADS/OMP_NUM_THREADS")
 
     opts = vars(parser.parse_args())
 
@@ -47,6 +51,25 @@ def main():
     if (threads := opts.pop("threads")) > 0:
         torch.set_num_threads(threads)
 
+    if opts['verbose'] == 0:
+        opts['verbose'] = None
+        warnings.filterwarnings("ignore")
+    elif opts['verbose'] == 1:
+        opts['verbose'] = None
+    elif opts['verbose'] == 2:
+        opts['verbose'] = False
+    elif opts['verbose'] > 2:
+        opts['verbose'] = True
+
     result = run.transcribe(**opts)
+
+    text = result.pop('text')
+    if (opts['verbose'] or 0) > 2:
+        sys.stderr.write(text)
+
     for key, value in result.items():
         print(key, ':', value)
+
+
+if __name__ == '__main__':
+    main()

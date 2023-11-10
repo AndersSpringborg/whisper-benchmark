@@ -11,27 +11,33 @@ def download_file(name):
     filename = os.path.join(constants.CACHE_DIR, f"{name}.{url.split('.')[-1]}")
     os.makedirs(constants.CACHE_DIR, exist_ok=True)
     if not os.path.exists(filename):
-        with request.urlopen(url) as response:
-            with open(filename, 'wb') as fb:
-                shutil.copyfileobj(response, fb)
+        request.urlretrieve(url, filename)
     return filename
 
 
 def transcribe(
     model_name,
     audio_id,
+    device,
     **kwargs,
 ):
-    model = whisper.load_model(model_name)
+    model = whisper.load_model(model_name, device=device)
     filename = download_file(audio_id)
+    language = audio_id.split('-')[0]
+    kwargs.setdefault('language', language)
 
     start_time = time.time()
-    result = model.transcribe(filename, verbose=None, **kwargs)
+    result = model.transcribe(filename, **kwargs)
     end_time = time.time()
+    elapsed = end_time - start_time
 
+    result.pop('segments')
     result.update(
         start_time=start_time,
         end_time=end_time,
-        elapsed=end_time - start_time,
+        elapsed=elapsed,
+        fps=result['content_frames'] / elapsed,
+        device=device,
+        language=kwargs['language'],
     )
     return result
