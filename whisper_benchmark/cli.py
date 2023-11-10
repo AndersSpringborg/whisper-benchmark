@@ -18,6 +18,13 @@ MODEL_NAMES = (
     'small',
     'medium',
     'large',
+    'large-v1',
+    'large-v2',
+    'large-v3',
+    'tiny.en',
+    'base.en',
+    'small.en',
+    'medium.en',
 )
 
 def main():
@@ -74,6 +81,8 @@ def main():
         sys.stderr.write(text)
 
     result.update(
+        model=opts['model_name'],
+        audio_id=opts['audio_id'],
         version=whisper_benchmark.__version__,
         torch_version=torch.version.__version__,
         cuda_version=torch.version.cuda,

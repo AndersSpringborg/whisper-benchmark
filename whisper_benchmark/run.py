@@ -23,11 +23,12 @@ def transcribe(
 ):
     model = whisper.load_model(model_name, device=device)
     filename = download_file(audio_id)
+    audio = whisper.load_audio(filename)
     language = audio_id.split('-')[0]
     kwargs.setdefault('language', language)
 
     start_time = time.time()
-    result = model.transcribe(filename, **kwargs)
+    result = model.transcribe(audio, **kwargs)
     end_time = time.time()
     elapsed = end_time - start_time
 
