@@ -1,9 +1,15 @@
 import sys
 import argparse
 import warnings
+
 import numpy as np
+import numba
 import torch
+
+import whisper
 from whisper import utils
+
+import whisper_benchmark
 from whisper_benchmark import run
 
 MODEL_NAMES = (
@@ -67,6 +73,15 @@ def main():
     if (opts['verbose'] or 0) > 2:
         sys.stderr.write(text)
 
+    result.update(
+        version=whisper_benchmark.__version__,
+        torch_version=torch.version.__version__,
+        cuda_version=torch.version.cuda,
+        python_version=sys.version.split()[0],
+        whisper_version=whisper.version.__version__,
+        numba_version=numba.version_info.string,
+        numpy_version=np.version.version,
+    )
     for key, value in result.items():
         print(key, ':', value)
 
