@@ -76,8 +76,10 @@ def main():
         opts['verbose'] = False
     elif opts['verbose'] > 2:
         opts['verbose'] = True
-
+    
+    print("Calling whisper")
     result = run.transcribe(**opts)
+    print("Transcription done")
 
     text = result.pop('text')
     if (opts['verbose'] or 0) > 2:
